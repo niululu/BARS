@@ -1,0 +1,35 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_20-8d8fe5935f9b8014bd791fb7a779bb5577f729d2",
+  "solcVersion": "0.8.20",
+  "solcLongVersion": "0.8.20+commit.a1b79de6",
+  "userSourceNameMap": {
+    "contracts/PhysioChain.sol": "project/contracts/PhysioChain.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "shanghai",
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/PhysioChain.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract PhysioChain {\n    struct Record {\n        bytes32 commitment;\n        string did;\n        bool revoked;\n        uint256 timestamp;\n    }\n\n    Record[] public records;\n\n    event Registered(uint256 indexed id, bytes32 commitment, string did);\n    event Revoked(uint256 indexed id);\n\n    function register(bytes32 commitment, string calldata did)\n        external\n        returns (uint256)\n    {\n        records.push(Record(commitment, did, false, block.timestamp));\n        uint256 id = records.length - 1;\n        emit Registered(id, commitment, did);\n        return id;\n    }\n\n    function revoke(uint256 id) external {\n        require(id < records.length, \"Invalid ID\");\n        records[id].revoked = true;\n        emit Revoked(id);\n    }\n\n    function getRecord(uint256 id)\n        external\n        view\n        returns (bytes32, string memory, bool, uint256)\n    {\n        require(id < records.length, \"Invalid ID\");\n        Record memory r = records[id];\n        return (r.commitment, r.did, r.revoked, r.timestamp);\n    }\n}\n"
+      }
+    }
+  }
+}
