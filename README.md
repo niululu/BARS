@@ -142,21 +142,21 @@ This step records the gas cost for on-chain commitment anchoring and completes t
 
 ## 7. Notes on Reproducibility
 
-All blockchain experiments are conducted on a local Hardhat network.
+- All blockchain experiments are conducted on a local Hardhat network.
 
-Gas measurements are deterministic under the local environment.
+- Gas measurements are deterministic under the local environment.
 
-Python-based rPPG processing and blockchain anchoring are decoupled by design.
+- Python-based rPPG processing and blockchain anchoring are decoupled by design.
 
-No GPU or external blockchain access is required.
+- No GPU or external blockchain access is required.
 
-Templates are quantized (int16) prior to hashing to ensure deterministic serialization.
+- Templates are quantized (int16) prior to hashing to ensure deterministic serialization.
 
-Enrollment uses multi-segment template-level median fusion.
+- Enrollment uses multi-segment template-level median fusion.
 
-Verification aggregates distances across sliding probe windows.
+- Verification aggregates distances across sliding probe windows.
 
-No raw biometric data is stored on-chain.
+- No raw biometric data is stored on-chain.
 
 ## Disclaimer
 
