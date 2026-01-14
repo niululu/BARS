@@ -66,12 +66,14 @@ Option A: Restore full Conda environment (recommended)
 ```bash
 conda env create -f environment.yml
 conda activate bars
+```
 
 Option B: Build Conda environment manually
 ```bash
 conda create -n bars python=3.9 -y
 conda activate bars
 pip install -r requirements.txt
+```
 
 ## 2. Node.js & Hardhat Setup (Blockchain Module)
 
@@ -82,26 +84,30 @@ We recommend using nvm:
 ```bash
 nvm install 22
 nvm use 22
+```
 
 Verify the installation (recommended npm ≥ 10):
 ```bash
 node -v
 npm -v
+```
 
 Install Hardhat dependencies:
 ```
 npm install
+```
 
 ## 3. Compile Smart Contracts
 
 Compile the Solidity smart contract:
 ```
 npx hardhat compile
-
+```
 
 Expected output:
 ```
 Compiled 1 Solidity file with solc 0.8.20
+```
 
 ## 4. Launch Local Blockchain Network
 
@@ -113,13 +119,14 @@ npx hardhat node
 This launches a local Ethereum network at:
 ```
 http://127.0.0.1:8545
+```
 
 ## 5. Deploy Smart Contract
 
 In a new terminal, deploy the contract to the local network:
 ```
 npx hardhat run scripts/deploy.ts --network localhost
-
+```
 
 The script will output the deployed contract address.
 
@@ -128,6 +135,7 @@ The script will output the deployed contract address.
 Run the gas benchmarking or registry interaction scripts:
 ```
 npx hardhat run scripts/benchmark.ts --network localhost
+```
 
 
 This step records the gas cost for on-chain commitment anchoring and completes the blockchain evaluation pipeline.
