@@ -31,7 +31,7 @@ The blockchain certifies the integrity of enrolled references; authentication de
 BARS/
 ├── contracts/        # Solidity registry contract
 ├── scripts/          # Hardhat deployment and benchmarking
-├── rppg/             # Python rPPG processing and evaluation
+├── rppg/             # Python rPPG processing and evalution result of inter- and intra-users
 ├── figures/          # Figures used in the paper
 ├── hardhat.config.ts
 ├── package.json
