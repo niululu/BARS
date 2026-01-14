@@ -55,7 +55,6 @@ BARS/
 ├── gas_results.json    # Gas benchmarking results (local Hardhat network)
 │
 └── README.md
-```
 ---
 
 ## 1. Environment Setup (Python / Conda)
