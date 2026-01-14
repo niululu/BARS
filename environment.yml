@@ -1,0 +1,23 @@
+name: bars
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - bzip2=1.0.8
+  - ca-certificates=2025.7.15
+  - expat=2.7.1
+  - libcxx=19.1.7
+  - libffi=3.4.4
+  - ncurses=6.5
+  - openssl=3.0.17
+  - pip=25.3
+  - python=3.9.23
+  - readline=8.3
+  - setuptools=78.1.1
+  - sqlite=3.50.2
+  - tk=8.6.15
+  - tzdata=2025b
+  - wheel=0.45.1
+  - xz=5.6.4
+  - zlib=1.2.13
+prefix: /Users/luniu/anaconda3/envs/bars

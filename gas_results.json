@@ -2,31 +2,31 @@
   {
     "N": 100,
     "avgGas": 100874.92,
-    "elapsedMs": 504
+    "elapsedMs": 1764
   },
   {
     "N": 500,
     "avgGas": 100714.264,
-    "elapsedMs": 1924
+    "elapsedMs": 7381
   },
   {
     "N": 1000,
     "avgGas": 100715.572,
-    "elapsedMs": 3600
+    "elapsedMs": 12166
   },
   {
     "N": 2000,
     "avgGas": 100722.208,
-    "elapsedMs": 7255
+    "elapsedMs": 24594
   },
   {
     "N": 5000,
     "avgGas": 100726.192,
-    "elapsedMs": 18103
+    "elapsedMs": 64370
   },
   {
     "N": 10000,
     "avgGas": 100727.5252,
-    "elapsedMs": 36371
+    "elapsedMs": 129645
   }
 ]
