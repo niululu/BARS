@@ -114,7 +114,7 @@ Compiled 1 Solidity file with solc 0.8.20
 Start a local Hardhat node (keep this terminal running):
 ```
 npx hardhat node
-
+```
 
 This launches a local Ethereum network at:
 ```
