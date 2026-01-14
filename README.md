@@ -29,15 +29,32 @@ The blockchain certifies the integrity of enrolled references; authentication de
 
 ```text
 BARS/
-├── contracts/        # Solidity registry contract
-├── scripts/          # Hardhat deployment and benchmarking
-├── rppg/             # Python rPPG processing and evalution result of inter- and intra-users
-├── figures/          # Figures used in the paper
-├── hardhat.config.ts
-├── package.json
-├── requirements.txt
+├── contracts/          # Solidity smart contracts (append-only registry)
+│   └── PhysioChain.sol
+│
+├── scripts/            # Hardhat deployment and gas benchmarking scripts
+│   ├── deploy.ts
+│   └── benchmark.ts
+│
+├── rppg/                                     # Python rPPG processing and biometric evaluation
+│   ├── ubfc_npz_to_hash.py                   # POS-based rPPG extraction, template construction & quantization and Enrollment, verification, FAR/FRR/EER
+│   ├── ubfc_npz_commitments.csv              # Output hashed files to feed to the blockchain 
+│   └── ubfc_within_session_distances.csv     # Output file for intra-user evaluation
+│
+├── utils/              # Shared utilities (plot helper)
+│
+├── environment.yml     # Conda environment specification (recommended)
+├── requirements.txt    # Python dependencies (pip)
+│
+├── hardhat.config.ts   # Hardhat configuration
+├── tsconfig.json       # TypeScript configuration for Hardhat scripts
+│
+├── package.json        # Node.js dependencies
+├── package-lock.json   # Dependency lock file
+│
+├── gas_results.json    # Gas benchmarking results (local Hardhat network)
+│
 └── README.md
-
 ```
 ---
 
