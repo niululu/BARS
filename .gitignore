@@ -1,3 +1,64 @@
+########################
+# Python
+########################
+__pycache__/
+*.py[cod]
+*.log
+*.out
+
+########################
+# Conda / venv
+########################
+.env
+.venv/
+env/
+env.bak/
+
+########################
+# Jupyter
+########################
+.ipynb_checkpoints/
+
+########################
+# Node / Hardhat
+########################
+node_modules/
+artifacts/
+cache/
+coverage/
+typechain/
+
+########################
+# TypeScript build
+########################
+dist/
+*.tsbuildinfo
+
+########################
+# OS
+########################
+.DS_Store
+
+########################
+# Editor
+########################
+.vscode/
+.idea/
+
+########################
+# Data / Results (DO NOT COMMIT)
+########################
+data/
+datasets/
+outputs/
+results/
+
+########################
+# Secrets
+########################
+.env
+.env.local
+
 node_modules/
 __pycache__/
 *.pyc
