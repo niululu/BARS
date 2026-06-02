@@ -38,10 +38,10 @@ async function main() {
   const conn = await network.connect();
   const ethers = conn.ethers;
 
-  console.log("Deploying PhysioChain...");
-  const physio = await ethers.deployContract("PhysioChain");
+  console.log("Deploying BARS...");
+  const physio = await ethers.deployContract("BARS");
   await physio.waitForDeployment();
-  console.log("PhysioChain deployed at:", await physio.getAddress());
+  console.log("BARS deployed at:", await physio.getAddress());
 
   console.log("Loading commitments from CSV...");
   const csv = fs.readFileSync("ubfc_npz_commitments.csv");
