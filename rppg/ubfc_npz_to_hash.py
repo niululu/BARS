@@ -1,4 +1,5 @@
 import os
+import argparse
 import glob
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.gridspec as gridspec
 from itertools import combinations
+from scipy.stats import norm
 
 mpl.rcParams["font.family"] = "serif"
 mpl.rcParams["font.serif"] = ["DejaVu Serif"]
@@ -22,7 +24,7 @@ mpl.rcParams["mathtext.fontset"] = "dejavuserif"
 # ---------------------------
 
 # UBFC root directory
-UBFC_NPZ_ROOT = "/afs/crc.nd.edu/group/cvrl/scratch_34/jspeth/preprocessed/UBFC_rPPG/"
+# UBFC_NPZ_ROOT is provided through --input_dir at runtime.
 
 FRAMES_KEY = "video"
 
@@ -486,10 +488,27 @@ def compute_eer(genuine_scores, impostor_scores, num_thresholds=800):
     t_eer = thresholds[idx]
     return float(eer), float(t_eer), FAR, FRR, thresholds
 
-def plot_far_frr_curve(FAR, FRR, thresholds, out_path="far_frr_curve.pdf", title="Verification Trade-off (FAR/FRR)"):
+def plot_far_frr_curve(FAR, FRR, thresholds, out_path="far_frr_curve.pdf", title="Verification Trade-off (FAR/FRR) - L2 Distance",mark_eer=True):
+    FAR = np.asarray(FAR)
+    FRR = np.asarray(FRR)
+    thresholds = np.asarray(thresholds)
+
+    # sort by threshold to ensure a clean curve
+    idx = np.argsort(thresholds)
+    thresholds, FAR, FRR = thresholds[idx], FAR[idx], FRR[idx]
+
     plt.figure(figsize=(6.2, 4.2))
     plt.plot(thresholds, FAR, label="FAR (impostor accepted)")
     plt.plot(thresholds, FRR, label="FRR (genuine rejected)")
+
+    if mark_eer:
+        eer_idx = np.argmin(np.abs(FAR - FRR))
+        eer_t = thresholds[eer_idx]
+        eer = 0.5 * (FAR[eer_idx] + FRR[eer_idx])
+        plt.scatter([eer_t], [eer], zorder=3)
+        plt.annotate(f"EER={eer:.4f}", (eer_t, eer),
+                     textcoords="offset points", xytext=(14, 8))
+
     plt.xlabel("Threshold t (accept if distance ≤ t)")
     plt.ylabel("Rate")
     plt.title(title)
@@ -499,19 +518,109 @@ def plot_far_frr_curve(FAR, FRR, thresholds, out_path="far_frr_curve.pdf", title
     plt.savefig(out_path, bbox_inches="tight")
     plt.close()
     print(f"Saved FAR/FRR curve to {out_path}")
+    # plt.figure(figsize=(6.2, 4.2))
+    # plt.plot(thresholds, FAR, label="FAR (impostor accepted)")
+    # plt.plot(thresholds, FRR, label="FRR (genuine rejected)")
+    # plt.xlabel("Threshold t (accept if distance ≤ t)")
+    # plt.ylabel("Rate")
+    # plt.title(title)
+    # plt.grid(True, alpha=0.3)
+    # plt.legend()
+    # plt.tight_layout()
+    # plt.savefig(out_path, bbox_inches="tight")
+    # plt.close()
+    # print(f"Saved FAR/FRR curve to {out_path}")
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm
 
-def plot_det_curve(FAR, FRR, out_path="det_curve.pdf", title="DET Curve (FRR vs FAR)"):
-    # DET curve in linear space (many papers do probit, but linear is fine + simple)
-    plt.figure(figsize=(5.2, 5.0))
-    plt.plot(FAR, FRR, linewidth=1.5)
-    plt.xlabel("FAR")
-    plt.ylabel("FRR")
+def plot_det_curve(FAR, FRR,
+                   out_path="det_curve.pdf",
+                   title="DET Curve (normal deviate scale, FRR vs FAR) – L2 distance",
+                   eps=1e-6):
+    """
+    Strict DET curve using normal deviate (probit) axes.
+    Also marks:
+      - EER point
+      - Operating points at FAR = 1% and 5%
+    """
+    mark_far = (0.01, 0.05)
+    FAR = np.asarray(FAR, dtype=float)
+    FRR = np.asarray(FRR, dtype=float)
+
+    # ---- sort by FAR for clean curve ----
+    order = np.argsort(FAR)
+    FAR = FAR[order]
+    FRR = FRR[order]
+
+    valid = (FAR > 0) & (FAR < 1)
+    FAR = FAR[valid]
+    FRR = FRR[valid]
+
+    # ---- avoid 0/1 for probit ----
+    FARc = np.clip(FAR, eps, 1 - eps)
+    FRRc = np.clip(FRR, eps, 1 - eps)
+
+    x = norm.ppf(FARc)
+    y = norm.ppf(FRRc)
+
+    # ---- find EER (min |FAR - FRR|) ----
+    idx_eer = int(np.argmin(np.abs(FAR - FRR)))
+    eer = 0.5 * (FAR[idx_eer] + FRR[idx_eer])
+
+    x_eer = norm.ppf(np.clip(FAR[idx_eer], eps, 1 - eps))
+    y_eer = norm.ppf(np.clip(FRR[idx_eer], eps, 1 - eps))
+
+    # ---- plot ----
+    plt.figure(figsize=(6.5, 5.5))
+    plt.plot(x, y, linewidth=1.6, label="DET curve")
+
+    # ---- EER point ----
+    plt.scatter([x_eer], [y_eer], s=40, facecolors="yellow", linewidths=1.2, zorder=4, label=f"EER ≈ {eer*100:.2f}%")
+
+    # ---- FAR = 1% / 5% operating points ----
+    for tf in mark_far:
+        tf_clamped = float(np.clip(tf, FAR.min(), FAR.max()))
+        fr = float(np.interp(tf_clamped, FAR, FRR))
+
+        xt = norm.ppf(np.clip(tf_clamped, eps, 1 - eps))
+        yt = norm.ppf(np.clip(fr, eps, 1 - eps))
+
+        if tf == 0.01:
+            facecolor = 'orange'
+        else:
+            facecolor = "pink"
+        plt.scatter([xt], [yt], s=36, facecolor=facecolor, zorder=4, marker="s", label=f"FAR={tf*100:.0f}%")
+
+        # optional guide lines
+        plt.axvline(xt, linestyle=":", linewidth=0.9, alpha=0.5, color="0.5", zorder=1)
+        plt.axhline(yt, linestyle=":", linewidth=0.9, alpha=0.5, color="0.5", zorder=1)
+
+    # ---- DET ticks (standard) ----
+    ticks = np.array([0.001, 0.01, 0.05, 0.20, 0.50, 0.80, 0.95, 0.99, 0.999])
+    tick_labels = [f"{t*100:.1f}%" for t in ticks]
+    tick_locations = norm.ppf(ticks)
+
+    plt.xticks(tick_locations, tick_labels)
+    plt.yticks(tick_locations, tick_labels)
+
+    plt.xlabel("False Acceptance Rate (FAR)")
+    plt.ylabel("False Rejection Rate (FRR)")
     plt.title(title)
-    plt.grid(True, alpha=0.3)
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.legend(loc="upper right", fontsize=9)
+
     plt.tight_layout()
-    plt.savefig(out_path, bbox_inches="tight")
+    plt.savefig(out_path, bbox_inches="tight", dpi=300)
     plt.close()
-    print(f"Saved DET curve to {out_path}")
+
+    print(
+        f"Saved DET curve to {out_path} | "
+        f"EER≈{eer*100:.2f}%, "
+        f"FRR@1%≈{np.interp(0.01, FAR, FRR)*100:.2f}%, "
+        f"FRR@5%≈{np.interp(0.05, FAR, FRR)*100:.2f}%"
+    )
+
 
 def report_operating_point(FAR, FRR, thresholds, target_far=0.01):
     idx = np.where(FAR <= target_far)[0]
@@ -519,7 +628,7 @@ def report_operating_point(FAR, FRR, thresholds, target_far=0.01):
         # if never reaches target FAR, pick minimum FAR point
         j = int(np.argmin(FAR))
         return thresholds[j], FAR[j], FRR[j]
-    j = int(idx[0])  # first threshold achieving FAR <= target
+    j = int(idx[-1])  # largest threshold with FAR <= target
     return thresholds[j], FAR[j], FRR[j]
 
 
@@ -630,7 +739,7 @@ def process_ubfc_npz(root_dir, output_csv="ubfc_npz_commitments.csv",
                     pos_filt=pos_filt,
                     fs=fs,
                     template_vec=template_vec,
-                    out_path="../psd_triplet.pdf")
+                    out_path="../../psd_triplet.pdf")
 
             commitment_hex = template_to_keccak_hash(template_vec)
 
@@ -717,6 +826,10 @@ def process_ubfc_npz(root_dir, output_csv="ubfc_npz_commitments.csv",
         use_hamming=use_hamming
     )
 
+    n_impostor = len(impostor_scores)
+    n_genuine = len(genuine_scores_all)
+    eps = 0.5 / max(n_impostor, n_genuine)
+
     eer, t_eer, FAR, FRR, thresholds = compute_eer(
         genuine_scores_all,
         impostor_scores,
@@ -725,18 +838,20 @@ def process_ubfc_npz(root_dir, output_csv="ubfc_npz_commitments.csv",
 
     print(f"[Verification] EER = {eer:.4f} at threshold t = {t_eer:.4f}")
 
-    metric_label = "hamming_sign" if use_hamming else "l2_norm"
+    metric_label = "hamming_sign" if use_hamming else "L2 Distance"
 
     plot_far_frr_curve(
         FAR, FRR, thresholds,
         out_path=f"far_frr_curve_{metric_label}.pdf",
-        title=f"Verification Trade-off (FAR/FRR) - {metric_label}"
+        title=f"Verification Trade-off (FAR/FRR) - {metric_label},",
+        mark_eer=True
     )
 
     plot_det_curve(
         FAR, FRR,
         out_path=f"det_curve_{metric_label}.pdf",
-        title=f"DET Curve (FRR vs FAR) - {metric_label}"
+        title=f"DET Curve (normal deviate scale, FRR vs FAR) - {metric_label}",
+        eps=eps
     )
 
     t_1pct, far_1pct, frr_1pct = report_operating_point(
@@ -758,12 +873,48 @@ def process_ubfc_npz(root_dir, output_csv="ubfc_npz_commitments.csv",
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Generate BARS rPPG template commitments from UBFC npz files."
+    )
+    parser.add_argument(
+        "-i", "--input_dir",
+        required=True,
+        help="Directory containing UBFC npz files."
+    )
+    parser.add_argument(
+        "-o", "--output_csv",
+        default="ubfc_npz_commitments.csv",
+        help="Output CSV file for template commitments."
+    )
+    parser.add_argument(
+        "--within_csv",
+        default="ubfc_within_session_distances.csv",
+        help="Output CSV file for within-session distances."
+    )
+    parser.add_argument(
+        "--max_files",
+        type=int,
+        default=None,
+        help="Optional maximum number of npz files to process."
+    )
+    parser.add_argument(
+        "--no_within_session",
+        action="store_true",
+        help="Disable within-session distance computation."
+    )
+    parser.add_argument(
+        "--use_hamming",
+        action="store_true",
+        help="Use sign-binarized Hamming distance instead of L2."
+    )
+    args = parser.parse_args()
+
     df = process_ubfc_npz(
-        UBFC_NPZ_ROOT,
-        output_csv="ubfc_npz_commitments.csv",
-        max_files=None,
-        do_within_session=True,
-        within_csv="ubfc_within_session_distances.csv",
-        use_hamming=False  # L2, or hamming
+        args.input_dir,
+        output_csv=args.output_csv,
+        max_files=args.max_files,
+        do_within_session=not args.no_within_session,
+        within_csv=args.within_csv,
+        use_hamming=args.use_hamming
     )
     print(df.head())
