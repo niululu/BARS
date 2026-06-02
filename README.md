@@ -29,29 +29,29 @@ The blockchain certifies the integrity of enrolled references; authentication de
 
 ```text
 BARS/
-├── contracts/          # Solidity smart contracts (append/revoke-only registry)
+├── contracts/                                # Solidity smart contracts (append/revoke-only registry)
 │   └── BARS.sol
 │
-├── scripts/            # Hardhat deployment and gas benchmarking scripts
+├── scripts/                                  # Hardhat deployment and gas benchmarking scripts
 │   ├── deploy.ts
 │   └── benchmark.ts
 │
 ├── rppg/                                     # Python rPPG processing and biometric evaluation
-│   ├── ubfc_npz_to_hash.py                   # POS-based rPPG extraction, template construction & quantization and Enrollment, verification, FAR/FRR/EER
-│   ├── gen_UBFC_templates.py                 # Output hashed files to feed to the blockchain 
+│   ├── gen_UBFC_templates.py                 # Convert original UBFC videos into npz files
+│   └── ubfc_npz_to_hash.py                   # Generate rPPG templates, commitments, and verification results
 │
-├── utils/              # Shared utilities (plot helper)
+├── utils/                                    # Shared utilities
 │
-├── environment.yml     # Conda environment specification (recommended)
-├── requirements.txt    # Python dependencies (pip)
+├── environment.yml                           # Conda environment specification
+├── requirements.txt                          # Python dependencies
 │
-├── hardhat.config.ts   # Hardhat configuration
-├── tsconfig.json       # TypeScript configuration for Hardhat scripts
+├── hardhat.config.ts                         # Hardhat configuration
+├── tsconfig.json                             # TypeScript configuration for Hardhat scripts
 │
-├── package.json        # Node.js dependencies
-├── package-lock.json   # Dependency lock file
+├── package.json                              # Node.js dependencies
+├── package-lock.json                         # Dependency lock file
 │
-├── gas_results.json    # Gas benchmarking results (local Hardhat network)
+├── gas_results.json                          # Gas benchmarking results
 │
 └── README.md
 ```
@@ -73,13 +73,31 @@ conda create -n bars python=3.9 -y
 conda activate bars
 pip install -r requirements.txt
 ```
+
 ## 2. UBFC Data Preparation and rPPG Commitment Generation
 
-Download the UBFC-rPPG dataset and place it under:
+Download the UBFC-rPPG dataset to a local directory. The dataset is not included in this repository.
 
-```text
-UBFCdata/
+Create the output directory for generated npz templates:
+```bash
+mkdir -p rppg/raw_templates
 ```
+(This directory is generated locally and is not included in the repository.)
+
+Convert the original UBFC videos into npz files with key `video`:
+```bash
+python rppg/gen_UBFC_templates.py -i <UBFC_DATASET_DIR> -o rppg/raw_templates
+```
+
+Generate rPPG templates, Keccak-256 commitments, and verification statistics:
+```bash
+python rppg/ubfc_npz_to_hash.py \
+  -i rppg/raw_templates \
+  -o rppg/ubfc_npz_commitments.csv \
+  --within_csv rppg/ubfc_within_session_distances.csv
+```
+The generated CSV files are local experiment outputs and are not committed to the repository.
+
 
 ## 3. Node.js & Hardhat Setup (Blockchain Module)
 
