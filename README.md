@@ -4,7 +4,7 @@
 This repository contains the reference implementation and benchmarking scripts for the paper:
 
 > **BARS: A Blockchain-Anchored System for rPPG-Based Biometric Verification**  
-> *(Published in the Proceedings of IEEE ICBC)*
+> *(Published in the Proceedings of IEEE ICBC 2026)*
 
 BARS demonstrates a hybrid biometric architecture in which physiological templates derived from remote photoplethysmography (rPPG) are anchored on a blockchain via cryptographic commitments, while biometric processing and verification are performed entirely off-chain.
 
