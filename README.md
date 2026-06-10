@@ -76,7 +76,7 @@ pip install -r requirements.txt
 
 ## 2. UBFC Data Preparation and rPPG Commitment Generation
 
-Download the UBFC-rPPG dataset to a local directory. The dataset is not included in this repository.
+Download the UBFC-rPPG dataset to a local directory. The dataset is not included in this repository and could be acquired from https://sites.google.com/view/ybenezeth/ubfcrppg.
 
 Create the output directory for generated npz templates:
 ```bash
